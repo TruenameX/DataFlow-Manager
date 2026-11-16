@@ -36,8 +36,11 @@ B05/B06/B07 утверждены владельцем с CR-015–017. TASK-002 
   E3 Sources API; E4 Testing & Release. В карточках используется соответствующий полный заголовок.
 - TASK-001–TASK-024 — постоянные родительские ID. Для крупной TASK-023 введены полные
   дочерние карточки TASK-023a–TASK-023d. Родитель закрывается только после всех детей;
-  его оценка не прибавляется к оценкам детей. Другие задачи при превышении 3 часов
-  декомпозируются до старта с сохранением родителя и явными зависимостями.
+  его оценка не прибавляется к оценкам детей. Три часа — ориентир планирования,
+  а не обязательное основание для декомпозиции; задачи разделяются при критической
+  технической или архитектурной необходимости. Связанные этапы допускается объединять.
+  Ранее записанные в карточках требования разделить только из-за превышения трёх
+  часов являются рекомендациями, а не обязательными условиями.
 - SPIKE-001–SPIKE-006 — исследования с ограниченным временем, без обещания положительного результата.
   Исследовательский прототип не заменяет реализацию, тесты feature-задачи или согласование решения.
 - **P0** — обязательно для приёмки/защиты данных; **P1** — обеспечение воспроизводимости и эксплуатации;
@@ -66,7 +69,7 @@ B05/B06/B07 утверждены владельцем с CR-015–017. TASK-002 
 Для начала реализации конкретного scope: прочитан актуальный код и обязательные источники;
 согласованы затрагивающие его Bxx и контракт; приняты обязательные предшественники;
 есть проверяемые AC, необходимые fixtures и безопасный контролируемый стенд;
-обоснованы новые зависимости и их версии; работа укладывается в 1–3 часа или разделена.
+обоснованы новые зависимости и их версии; оценка реалистична и включает проверки.
 Частичное исследование/черновик допускаются до Ready, но не выдаются за завершённую feature.
 Неизвестные правила валидации, HTTP-коды, форматы ID и окружение не выбираются молча.
 
@@ -103,23 +106,25 @@ JSON `{"status": "ok"}`, Content-Type `application/json`, без БД, ключ�
 | TASK-006 | Repository: создание и чтение | Infrastructure & Persistence | P0 | Blocked | TASK-005 | B08 conditions | 2–3 часа |
 | TASK-007 | Repository: изменение и удаление | Infrastructure & Persistence | P0 | Blocked | TASK-006 | B08 conditions | 2–3 часа |
 | TASK-005a1 | DB config и PG* | Infrastructure & Persistence | P0 | ACCEPTED | TASK-004 | B08 conditions / DoR | 2–3 часа |
-| TASK-005a2 | Capability gate и Engine | Infrastructure & Persistence | P0 | Blocked | TASK-005a1, TASK-005a2.1, TASK-005a2.2 | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005a2 | Capability gate и Engine | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a1, TASK-005a2.1, TASK-005a2.2 | B08 conditions / DoR | Родитель; оценки детей |
 | TASK-005a2.1 | libpq capability gate | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a1 | B08 conditions / DoR | 2–3 часа |
-| TASK-005a2.2 | Engine/sessionmaker и do_connect | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.1, TASK-005a2.2.2 | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005a2.2 | Engine/sessionmaker и do_connect | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.1, TASK-005a2.2.2 | B08 conditions / DoR | Родитель; оценки детей |
 | TASK-005a2.2.1 | Engine и sessionmaker | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.1 | B08 conditions / DoR | 2–3 часа |
-| TASK-005a2.2.2 | do_connect и диагностика | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.2.1, TASK-005a2.2.2b | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005a2.2.2 | do_connect и диагностика | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.1, TASK-005a2.2.2b | B08 conditions / DoR | Родитель; оценки детей |
 | TASK-005a2.2.2a | Protected Engine и первый connect | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.1 | B08 conditions / DoR | 1,8–2,5 часа |
-| TASK-005a2.2.2b | Pool lifecycle и повторный PG*-gate | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.2.2a, TASK-005a2.2.2b2 | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005a2.2.2b | Pool lifecycle и повторный PG*-gate | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2a, TASK-005a2.2.2b2 | B08 conditions / DoR | Родитель; оценки детей |
 | TASK-005a2.2.2b1 | Fake DBAPI и базовый lifecycle | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2a | B08 conditions / DoR | 1,9–2,8 часа |
-| TASK-005a2.2.2b2 | Pre-ping и безопасность pool diagnostics | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.2.2b1, TASK-005a2.2.2b2c | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005a2.2.2b2 | Pre-ping и безопасность pool diagnostics | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2b1, TASK-005a2.2.2b2c | B08 conditions / DoR | Родитель; оценки детей |
 | TASK-005a2.2.2b2a | Failed pre-ping и replacement | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2b1 | B08 conditions / DoR | 1,4–2,5 часа |
-| TASK-005a2.2.2b2b | Ограниченный канал pool diagnostics | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.2.2b2a, TASK-005a2.2.2b2b2 | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005a2.2.2b2b | Ограниченный канал pool diagnostics | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2b2a, TASK-005a2.2.2b2b2 | B08 conditions / DoR | Родитель; оценки детей |
 | TASK-005a2.2.2b2b1 | Защищённый канал pool diagnostics | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2b2a | B08 conditions / DoR | 1,8–2,9 часа |
-| TASK-005a2.2.2b2b2 | Lifecycle канала pool diagnostics | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.2.2b2b1 | B08 conditions / DoR | 1,6–2,8 часа |
-| TASK-005a2.2.2b2c | Проверка pool diagnostics и PG* | Infrastructure & Persistence | P0 | Blocked | TASK-005a2.2.2b2b | B08 conditions / DoR | 1,5–2,7 часа |
-| TASK-005b1 | UoW lifecycle и outcome | Infrastructure & Persistence | P0 | Blocked | TASK-005a2 | B08 conditions / DoR | 2–3 часа |
-| TASK-005b2 | UoW ошибки и безопасность | Infrastructure & Persistence | P0 | Blocked | TASK-005b1 | B08 conditions / DoR | 2–3 часа |
-| TASK-005c | Lifespan и health | Infrastructure & Persistence | P0 | Blocked | TASK-005a2 | B08 conditions / DoR | 1–3 часа |
+| TASK-005a2.2.2b2b2 | Lifecycle канала pool diagnostics | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2b2b1 | B08 conditions / DoR | 1,6–2,8 часа |
+| TASK-005a2.2.2b2c | Проверка pool diagnostics и PG* | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2.2.2b2b | B08 conditions / DoR | 1,5–2,7 часа |
+| TASK-005b1 | UoW lifecycle и outcome | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005b1.1, TASK-005b1.2 | B08 conditions / DoR | Родитель; оценки детей |
+| TASK-005b1.1 | UoW contract model | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2 | B08 conditions / DoR | 1,5–2,5 часа |
+| TASK-005b1.2 | UoW runtime lifecycle | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005b1.1 | B08 conditions / DoR | 4,1–6,2 часа |
+| TASK-005b2 | UoW ошибки и безопасность | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005b1 | B08 conditions / DoR | 2–3 часа |
+| TASK-005c | Lifespan и health | Infrastructure & Persistence | P0 | ACCEPTED | TASK-005a2 | B08 conditions / DoR | 1–3 часа |
 | TASK-005d1 | Процедура и integration fixtures | Infrastructure & Persistence | P0 | Planned | TASK-004 | B08 conditions / DoR | 2–3 часа |
 | TASK-005d2 | Подготовка стенда | Infrastructure & Persistence | P0 | Blocked | TASK-005d1 | разрешение / DoR | 2–3 часа |
 | TASK-005e1 | PostgreSQL: транзакции и изоляция | Infrastructure & Persistence | P0 | Blocked | TASK-005a2, TASK-005b2, TASK-005c, TASK-005d2 | разрешение / DoR | 2–3 часа |
@@ -280,7 +285,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2 — Capability gate и Engine
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель и Scope / Out of Scope:** Проверка поддержки libpq, Engine/sessionmaker; без реального подключения и UoW.
 - **Dependencies:** TASK-005a1, TASK-005a2.1, TASK-005a2.2; родитель принимается после обеих дочерних задач.
 - **FR/AC:** см. родительскую TASK-005; [B08/M1/M2](B08-SESSION-UOW.md).
@@ -288,6 +293,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + Готов 005a1, согласована проверка capability и разрешены файлы и offline-тесты.
 - **Definition of Done:** общий DoD + Offline spy подтверждает параметры и отсутствие I/O; версии/API capability gate проверены на установленном стеке.
 - **План проверки:** Offline spy подтверждает параметры и отсутствие I/O; версии/API capability gate проверены на установленном стеке.
+- **Приёмка:** владелец принял задачу после принятия 005a1, 005a2.1 и 005a2.2; основание — offline-доказательства дочерних задач. Реальный PostgreSQL, SCRAM и server-side fallback остаются integration gate.
 - **Оценка:** родитель; оценки дочерних карточек, без двойного подсчёта.
 - **Разрешения:** изменение файлов и тесты отдельно; SQL, подключения, миграции, подготовка и очистка ресурсов требуют отдельных разрешений.
 
@@ -308,7 +314,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2 — Engine/sessionmaker и do_connect
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** Engine/sessionmaker с параметрами B08 и PG*-gate перед каждым новым физическим соединением; выполнение через дочерние карточки.
 - **Out of Scope:** UoW, lifespan, repository, CRUD и PostgreSQL integration.
 - **Dependencies:** TASK-005a2.1, TASK-005a2.2.2; 005a2.2.1 входит транзитивно.
@@ -317,6 +323,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + принят 005a2.1, конечные карточки оценены и отдельно разрешены.
 - **Definition of Done:** общий DoD + обе конечные карточки завершены; offline-проверки параметров, replacement/pre-ping и диагностики приложены.
 - **План проверки:** результаты 005a2.2.1 и 005a2.2.2; реальные серверные проверки остаются integration gate.
+- **Приёмка:** владелец принял задачу по результатам 005a2.2.1 и 005a2.2.2; реальные серверные проверки остаются integration gate.
 - **Оценка:** родитель; оценки детей без двойного подсчёта.
 - **Разрешения:** файлы и offline-тесты отдельно; PostgreSQL и другие операции с ресурсами отдельно.
 
@@ -337,7 +344,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2.2 — do_connect и диагностика
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** проверка PG* перед новым физическим соединением, fail-closed и offline-проверки replacement/invalidation.
 - **Out of Scope:** PostgreSQL integration, серверный SCRAM, UoW и lifespan.
 - **Dependencies:** TASK-005a2.2.1, TASK-005a2.2.2b; 005a2.2.2a входит транзитивно.
@@ -346,6 +353,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + 005a2.2.1 принята; конечные карточки оценены и разрешены отдельно; применимые fixtures доступны на соответствующем этапе.
 - **Definition of Done:** общий DoD + обе конечные карточки приняты; offline-тесты с положительными и отрицательными контролями реально выполнены; обычная диагностика не раскрывает синтетические секреты.
 - **План проверки:** результаты 005a2.2.2a и 005a2.2.2b; реальные серверные проверки остаются integration gate.
+- **Приёмка:** владелец принял задачу по offline-доказательствам 005a2.2.2a и 005a2.2.2b; реальные серверные проверки остаются integration gate.
 - **Оценка:** родитель; оценки дочерних карточек без двойного подсчёта.
 - **Разрешения:** файлы и offline-тесты отдельно; реальные подключения и операции с ресурсами отдельно.
 
@@ -369,7 +377,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2.2b — Pool lifecycle и повторный PG*-gate
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** Управляемый fake DBAPI/pool harness; проверки первого и повторного checkout, invalidation, recycle и replacement после failed pre-ping; повторный PG*-gate, безопасная диагностика и регрессия принятых компонентов.
 - **Out of Scope:** Реальная PostgreSQL/SQL, серверный SCRAM, lifespan, UoW, repository/CRUD, миграции и изменение B08.
 - **Dependencies:** TASK-005a2.2.2a, TASK-005a2.2.2b2; 005a2.2.2b1 входит транзитивно.
@@ -378,6 +386,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + 005a2.2.2a принята; конечные задачи оценены и отдельно разрешены; применимые fixtures и security gate определяются на соответствующем этапе.
 - **Definition of Done:** общий DoD + обе конечные задачи приняты; offline-проверки каждого lifecycle-сценария и положительные контроли реально выполнены; capability, Engine/sessionmaker и health-регрессия пройдены; команда, версии и результат записаны.
 - **План проверки:** результаты 005a2.2.2b1 и 005a2.2.2b2; риск pool logger и замечание MINOR закрываются в 005a2.2.2b2.
+- **Приёмка:** владелец принял задачу по результатам 005a2.2.2b1 и 005a2.2.2b2; ограничения fake DBAPI и реального сервера сохраняются.
 - **Ограничения доказательств:** fake pool/DBAPI не подтверждает реальную PostgreSQL, SCRAM, серверный fallback или произвольный native I/O.
 - **Файловый scope:** src/dataflow_manager/db/session.py и tests/unit/test_db_session.py; остальные файлы вне scope.
 - **Оценка:** родитель; оценки детей без двойного подсчёта.
@@ -403,7 +412,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2.2b2 — Pre-ping и безопасность pool diagnostics
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** Failed pre-ping, распознавание disconnect и replacement с повторным PG*-gate; безопасная диагностика pool logger, достижимые ошибки cleanup, положительные контроли и регрессия ранее принятых TASK-005a2.*.
 - **Out of Scope:** Реальная сеть/PostgreSQL/SQL, серверный SCRAM, lifespan, UoW, repository/CRUD, миграции и изменение B08/M1/M2.
 - **Dependencies:** TASK-005a2.2.2b1, TASK-005a2.2.2b2c; 005a2.2.2b2a и 005a2.2.2b2b входят транзитивно.
@@ -412,6 +421,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + 005a2.2.2b1 принята; конечные карточки оценены и отдельно разрешены; механизм диагностического канала и применимые fixtures обосновываются для соответствующей конечной задачи.
 - **Definition of Done:** общий DoD + все конечные карточки приняты; offline-тесты failed pre-ping/replacement, PG*-gate, INFO/ERROR pool logger, достижимого cleanup, положительных контролей и полной регрессии реально выполнены; MAJOR и MINOR закрыты доказательствами; команда, версии и результат записаны.
 - **План проверки:** результаты 005a2.2.2b2a, 005a2.2.2b2b и 005a2.2.2b2c; реальные серверные проверки остаются integration gate.
+- **Приёмка:** владелец принял задачу по результатам принятых 005a2.2.2b2a, 005a2.2.2b2b и 005a2.2.2b2c; MAJOR и MINOR закрыты в offline-scope по доказательствам 005a2.2.2b2c.
 - **Ограничения доказательств:** Offline harness не подтверждает реальный PostgreSQL, серверный SCRAM/fallback, произвольный native I/O или поведение произвольного стороннего кода и handler.
 - **Файловый scope:** предварительно src/dataflow_manager/db/session.py и tests/unit/test_db_session.py; при необходимости другого файла требуется отдельное согласование.
 - **Оценка:** родитель; оценки конечных карточек без двойного подсчёта.
@@ -437,7 +447,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2.2b2b — Ограниченный канал pool diagnostics
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** Реализовать для служебного pool согласованную границу диагностического канала: в обычные журналы поступают только фиксированные безопасные категории; исходные исключения сохраняются для внутренней обработки SQLAlchemy.
 - **Out of Scope:** Защита от произвольных сторонних handlers или кода в том же процессе; новые публичные DB_*-коды; реальная сеть/PostgreSQL/SQL, lifespan, UoW, repository/CRUD и миграции.
 - **Dependencies:** TASK-005a2.2.2b2a, TASK-005a2.2.2b2b2.
@@ -446,6 +456,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + 005a2.2.2b2a ACCEPTED; конкретный механизм, handlers/propagation, безопасные категории, жизненный цикл канала и влияние на другие Engine обоснованы; файловый scope и оценка ≤3 часа отдельно согласованы; файлы и offline-тесты отдельно разрешены.
 - **Definition of Done:** общий DoD + механизм и его offline-тесты реально выполнены; INFO и достижимые ERROR/cleanup-пути проверены с положительными контролями; команда, версии и ограничения записаны. Закрытие MAJOR подтверждается отдельной задачей 005a2.2.2b2c.
 - **План проверки:** синтетические ошибки в invalidation и cleanup, наблюдение обычных handlers, проверка msg/args/exc_info/stack_info и отсутствия воздействия на другой Engine; сохранение внутреннего disconnect path.
+- **Приёмка:** владелец принял родительскую задачу после независимой проверки её AC/DoD и принятия 005a2.2.2b2b1 и 005a2.2.2b2b2. Основание — предыдущие разрешённые offline-протоколы 67 и 79 passed; при документальной фиксации тесты повторно не запускались. Fake DBAPI, подменённая инициализация dialect и ограниченные конкурентные сценарии не подтверждают реальный сервер, SCRAM/fallback или отсутствие всех гонок. Проектные MAJOR по pool diagnostics и MINOR по PG*-диагностике остаются открыты до независимой приёмки 005a2.2.2b2c.
 - **Ограничения доказательств:** Не обещается защита от произвольных сторонних handlers или изменения logging другими компонентами процесса; реальный сервер и driver diagnostics остаются integration gate.
 - **Файловый scope:** предварительно src/dataflow_manager/db/session.py и tests/unit/test_db_session.py; необходимость конфигурации logging или других файлов требует отдельного согласования.
 - **Оценка:** родитель; оценки конечных карточек без двойного подсчёта.
@@ -471,7 +482,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2.2b2b2 — Lifecycle канала pool diagnostics
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** Проверить и при необходимости доработать жизненный цикл общего защищённого канала при dispose/recreate, активном старом pool, повторной и конкурентной настройке.
 - **Out of Scope:** Реальная сеть/PostgreSQL/SQL, серверный SCRAM, произвольная модификация logging другим кодом, lifespan, UoW, repository/CRUD, миграции и новые публичные DB_*-коды.
 - **Dependencies:** TASK-005a2.2.2b2b1.
@@ -480,6 +491,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + 005a2.2.2b2b1 ACCEPTED; lifecycle, тестовые наблюдатели и достижимые cleanup-пути определены; файлы и offline-тесты отдельно разрешены.
 - **Definition of Done:** общий DoD + offline-тесты dispose/recreate, старого pool, конкурентности, идемпотентности, INFO/ERROR и cleanup реально выполнены; регрессия capability/Engine/do_connect/pool/health сохранена; команда и результат записаны.
 - **План проверки:** существующий fake DBAPI/pool harness, два Engine, синтетические секреты, root и несколько обычных handlers, счётчики собственных handlers и fault injection.
+- **Приёмка:** владелец принял задачу по результатам независимого Acceptance Review. Предыдущий разрешённый offline-запуск: 79 passed, 0 failed, 0 skipped, 1 warning; при документальной фиксации тесты повторно не запускались. Проверены dispose/recreate, активный старый pool, конкурентная настройка, конфликты и безопасная диагностика в пределах fake DBAPI harness. Подменённая первичная инициализация dialect и сценарий с четырьмя потоками не доказывают поведение реального сервера или отсутствие всех гонок. Отдельные INFO/ERROR для каждого из старого и нового pool, disabled и неверная идентичность handler требуют дополнительного внимания в TASK-005a2.2.2b2c.
 - **Ограничения доказательств:** Engine не подключается к приложению или реальной БД. MAJOR и MINOR остаются открыты до независимой TASK-005a2.2.2b2c; произвольный сторонний код и реальный сервер вне offline-доказательств.
 - **Файловый scope:** src/dataflow_manager/db/session.py и tests/unit/test_db_session.py; остальные файлы требуют отдельного согласования.
 - **Оценка:** реализация 0,4–0,7 часа; offline-тесты 0,6–1,0 часа; безопасность 0,3–0,6 часа; регрессия 0,3–0,5 часа; итого 1,6–2,8 часа.
@@ -487,7 +499,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005a2.2.2b2c — Проверка pool diagnostics и PG*
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель / Scope:** Проверить согласованный ограниченный канал на достижимых INFO/ERROR/cleanup-путях pool logger; закрыть MAJOR и MINOR по положительному контролю журнала и диагностике PG*-сценариев; выполнить регрессию TASK-005a2.*.
 - **Out of Scope:** Реальная сеть/PostgreSQL/SQL, серверный SCRAM/fallback, произвольные сторонние handlers, lifespan, UoW, repository/CRUD и миграции.
 - **Dependencies:** TASK-005a2.2.2b2b.
@@ -496,6 +508,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + 005a2.2.2b2b ACCEPTED; критерии наблюдения handlers и доступные cleanup-пути определены; файлы и offline-тесты отдельно разрешены; оценка не превышает трёх часов.
 - **Definition of Done:** общий DoD + offline-тесты INFO/ERROR, propagation, положительных контролей, PG*, cleanup и полной регрессии реально выполнены; MAJOR и MINOR закрыты доказательствами; команда, версии и ограничения записаны.
 - **План проверки:** уникальные синтетические маркеры пароля, PG-значений и исключений; положительный контроль до очистки буфера; наблюдение обычных handlers и счётчиков fake DBAPI; fault injection cleanup.
+- **Приёмка:** владелец принял задачу после независимого Final Acceptance Review и закрыл MAJOR по pool diagnostics и MINOR по PG*/DFM_DB_* в проверенном offline-scope. Предыдущий разрешённый запуск: 88 passed, 0 failed, 0 skipped, 1 warning; при документальной фиксации тесты повторно не запускались. Использованы fake DBAPI, подменённая первичная инициализация dialect и fixture с внутренним API pytest; конкурентные проверки ограничены. Реальные PostgreSQL, SCRAM, server-side fallback, произвольный native I/O и сторонний код не подтверждены.
 - **Ограничения доказательств:** Offline-тесты не подтверждают реальный сервер, SCRAM/fallback, произвольный native I/O или поведение произвольного стороннего кода и handlers.
 - **Файловый scope:** предварительно tests/unit/test_db_session.py и при необходимости src/dataflow_manager/db/session.py; иные файлы только по отдельному согласованию.
 - **Оценка:** подготовка сценариев 0,2–0,4 часа; offline-тесты 0,7–1,2 часа; безопасность, регрессия и запас 0,6–1,1 часа; итого 1,5–2,7 часа.
@@ -503,20 +516,53 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 ### TASK-005b1 — UoW lifecycle и outcome
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель и Scope / Out of Scope:** Одноразовая UoW и immutable outcome; без repository и публичного SQL.
-- **Dependencies:** TASK-005a2.
+- **Dependencies:** TASK-005b1.1 и TASK-005b1.2; TASK-005a2 входит транзитивно.
 - **FR/AC:** см. родительскую TASK-005; [B08/M1/M2](B08-SESSION-UOW.md).
 - **Acceptance Criteria:** Только явный одноразовый commit; переходы и outcome сохраняются после CLOSED.
-- **Definition of Ready:** общий DoR + Готов 005a2; утверждена таблица M2; разрешены файлы и offline-тесты.
-- **Definition of Done:** общий DoD + Offline fault injection покрывает состояния, begin, выход без commit и повторное использование.
+- **Definition of Ready:** общий DoR + TASK-005a2 ACCEPTED; утверждена таблица M2; конечные карточки оценены и отдельно разрешены.
+- **Definition of Done:** общий DoD + обе дочерние задачи приняты; собственные AC проверены; offline fault injection покрывает состояния, begin, выход без commit и повторное использование.
 - **План проверки:** Offline fault injection покрывает состояния, begin, выход без commit и повторное использование.
-- **Оценка:** 2–3 часа; при превышении разделить до старта.
+- **Приёмка:** владелец принял родителя после приёмки b1.1 и b1.2 и проверки собственных AC/DoD. Основание — offline-доказательства дочерних задач; реальные PostgreSQL и физическое состояние транзакций остаются integration conditions.
+- **Оценка:** родитель; оценки детей без двойного подсчёта.
 - **Разрешения:** изменение файлов и тесты отдельно; SQL, подключения, миграции, подготовка и очистка ресурсов требуют отдельных разрешений.
+
+### TASK-005b1.1 — UoW contract model
+
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
+- **Description / Scope:** Закрытые enum, immutable outcome, безопасное исключение, внутренняя модель состояний и классификация по B08/M2.
+- **Out of Scope:** Session, Engine, context manager, runtime lifecycle, repository, SQL и FastAPI.
+- **Dependencies:** TASK-005a2.
+- **Acceptance Criteria:** Модель допускает только утверждённые значения; outcome immutable; безопасное исключение не раскрывает произвольный текст; создание и импорт не выполняют DB I/O.
+- **Definition of Ready:** общий DoR + TASK-005a2 ACCEPTED, B08/M2 уточнён и утверждён; файлы и offline-тесты отдельно разрешены.
+- **Definition of Done:** unit-тесты enum, фаз, outcome, safe exception и отсутствия DB I/O выполнены; неполный runtime API не опубликован.
+- **Integration conditions:** Реальные PostgreSQL, транзакции, SQLSTATE и server behavior не подтверждаются.
+- **План проверки:** enum и отрицательные значения, код–фаза, UNKNOWN, immutable outcome, str/repr/args, отсутствие Session и Engine.
+- **Приёмка:** владелец принял контрактную модель по независимому review исправлений согласованности outcome и изоляции импорта. Предыдущий offline-протокол реализации: 165 passed, 0 failed, 0 skipped, 1 warning; при review тесты повторно не запускались. Runtime UoW и реальные PostgreSQL/транзакции этой приёмкой не подтверждены.
+- **Файловый scope:** src/dataflow_manager/db/uow.py и tests/unit/test_db_uow.py.
+- **Оценка:** 1,5–2,5 часа.
+- **Разрешения:** изменение файлов и offline-тесты отдельно; реальные подключения и SQL отдельно.
+
+### TASK-005b1.2 — UoW runtime lifecycle
+
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
+- **Description / Scope:** Session ownership, context manager, begin, explicit commit, mark_failed, rollback/close, CLOSED, outcome и базовые ошибки по B08/M2.
+- **Out of Scope:** repository, публичный SQL API, FastAPI integration, реальная БД и B06 mapping.
+- **Dependencies:** TASK-005b1.1.
+- **Acceptance Criteria:** Основной lifecycle и Q10–Q14 соблюдены; перехваченная ошибка не разрешает повторный commit; cleanup и первичная ошибка сохраняются.
+- **Definition of Ready:** общий DoR + TASK-005b1.1 ACCEPTED; B08/M2 утверждён; fake Session, файлы и offline-тесты отдельно разрешены.
+- **Definition of Done:** offline-тесты lifecycle, одиночных ошибок, перехвата, основных прерываний и outcome выполнены; скрытые подключения и SQL отсутствуют.
+- **Integration conditions:** Реальный PostgreSQL и физическое состояние транзакции остаются за integration-задачами.
+- **План проверки:** fake Session/sessionmaker, порядок операций, повторное использование, перехваченные ошибки, BaseException, outcome и health.
+- **Приёмка:** владелец принял задачу по результатам независимого review. Предыдущий разрешённый offline-протокол: 172 passed, 0 failed, 0 skipped, 1 warning; при review тесты повторно не запускались. Fake Session не подтверждает поведение реального сервера или физическое освобождение соединения.
+- **Файловый scope:** src/dataflow_manager/db/uow.py и tests/unit/test_db_uow.py.
+- **Оценка:** 4,1–6,2 часа с тестами; объединённый цикл b1.2/b2 допускается по разрешению владельца, без изменения условий окончательной приёмки.
+- **Разрешения:** изменение файлов и offline-тесты отдельно; реальные подключения и SQL отдельно.
 
 ### TASK-005b2 — UoW ошибки и безопасность
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель и Scope / Out of Scope:** Составные ошибки и безопасный канал; без repository и B06 mapping.
 - **Dependencies:** TASK-005b1.
 - **FR/AC:** см. родительскую TASK-005; [B08/M1/M2](B08-SESSION-UOW.md).
@@ -524,12 +570,15 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + Готов 005b1; согласован канал M2; разрешены файлы и offline-тесты.
 - **Definition of Done:** общий DoD + Offline fault injection и положительный контроль обнаружения секретов покрывают составные ошибки.
 - **План проверки:** Offline fault injection и положительный контроль обнаружения секретов покрывают составные ошибки.
-- **Оценка:** 2–3 часа; при превышении разделить до старта.
+- **Приёмка:** владелец принял задачу после приёмки b1 по независимому review составных ошибок и безопасной диагностики. Доказательства ограничены предыдущим offline-протоколом и fake Session; отдельный тест успешного commit с ошибкой close и прерыванием диагностики остаётся MINOR. Реальные PostgreSQL, SCRAM и server-side поведение не подтверждены.
+- **Уточнение MINOR:** адресный offline-тест успешного commit, ошибки close и прерывания диагностики выполнен для KeyboardInterrupt, SystemExit и GeneratorExit: 3 passed. Пробел покрытия технически устранён по self-review; независимое подтверждение ожидается.
+- **Закрытие MINOR:** независимый review подтвердил адресный тест и предыдущий протокол 3 passed; владелец закрыл замечание в проверенном offline-scope. Реальная PostgreSQL и физическое освобождение соединений не подтверждены.
+- **Оценка:** 2–3 часа; ориентир, без обязательной декомпозиции по длительности.
 - **Разрешения:** изменение файлов и тесты отдельно; SQL, подключения, миграции, подготовка и очистка ресурсов требуют отдельных разрешений.
 
 ### TASK-005c — Lifespan и health
 
-- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / Blocked.
+- **Epic / Priority / Status:** Infrastructure & Persistence / P0 / ACCEPTED.
 - **Цель и Scope / Out of Scope:** FastAPI lifespan и Q08; без DB-dependent маршрутов и readiness API.
 - **Dependencies:** TASK-005a2.
 - **FR/AC:** см. родительскую TASK-005; [B08/M1/M2](B08-SESSION-UOW.md).
@@ -537,6 +586,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 - **Definition of Ready:** общий DoR + Готов 005a2; разрешены файлы и offline-тесты.
 - **Definition of Done:** общий DoD + Offline startup/shutdown и исходные три свойства health проверены без сети.
 - **План проверки:** Offline startup/shutdown и исходные три свойства health проверены без сети.
+- **Приёмка:** владелец принял задачу по результатам независимого review. Предыдущий offline-протокол lifespan/health: 11 passed; общая регрессия: 183 passed, 0 failed, 0 skipped, 1 warning. Повторные lifecycle, degraded startup, dispose и безопасная диагностика подтверждены в пределах offline-тестов; реальная PostgreSQL и server-side поведение не проверялись.
 - **Оценка:** 1–3 часа; при превышении разделить до старта.
 - **Разрешения:** изменение файлов и тесты отдельно; SQL, подключения, миграции, подготовка и очистка ресурсов требуют отдельных разрешений.
 
@@ -1241,7 +1291,9 @@ SPIKE стартуют независимо, но для снятия Bxx нед
 | TASK-005a2.2.2b | TASK-005a2.2.2 |
 | TASK-005a2.2.2 | TASK-005a2.2 |
 | TASK-005a2.2 | TASK-005a2 |
-| TASK-005a2 | TASK-005b1, TASK-005c, TASK-005e1 |
+| TASK-005a2 | TASK-005b1.1, TASK-005c, TASK-005e1 |
+| TASK-005b1.1 | TASK-005b1.2, TASK-005b1 |
+| TASK-005b1.2 | TASK-005b1 |
 | TASK-005b1 | TASK-005b2 |
 | TASK-005d1 | TASK-005d2 |
 | TASK-005b2, TASK-005c, TASK-005d2 | TASK-005e1 |
@@ -1426,7 +1478,7 @@ NFR-007 → SPIKE-006/TASK-013/015/022. Никаких несогласован�
 | PATCH/DELETE во время check | Неожиданная версия снимка/пароля | B09, TASK-014/023d; снимок и поведение удаления не утверждать автоматически |
 | Loopback без авторизации | Доступ других локальных процессов остаётся | PRD доверяет локальной среде; B11/OQ-05 решить явно, публичный запуск и auth вне MVP |
 | Расхождение реализации с принятыми API/полями | Ошибки DTO/схемы/безопасности | B05/B07 приняты; TASK-002/015 и CR-017 проверяют соответствие |
-| Недостаток test-fixtures или timebox | Задача превышает 3 часа | Сохранить родительский ID, до старта оформить дочерние карточки с зависимостями; не уменьшать проверочную матрицу |
+| Недостаток test-fixtures или timebox | Оценка превышает ориентир планирования | Уточнить оценку и fixtures; декомпозировать при технической или архитектурной необходимости, не уменьшать проверочную матрицу |
 | Отрицательные исследования | Check-ветка остаётся Blocked | Продолжать независимый CRUD; владельцу — варианты следующей итерации/изменения требований, без самостоятельного ослабления защиты |
 
 Оценки предполагают готовую среду и принятые входные решения; это ориентир инженерной работы,

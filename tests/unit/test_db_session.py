@@ -1116,3 +1116,249 @@ def test_pool_reset_failure_is_sanitized(offline_pool, caplog):
     assert marker not in caplog.text
     assert not any(r.name == session._POOL_LOGGER_NAME for r in caplog.records)
     assert original.closed and len(created) == 1
+
+
+def test_b2c_unprotected_sqlalchemy_info_and_error_positive_control(monkeypatch, caplog):
+    import sqlalchemy
+
+    forbid_network(monkeypatch)
+    marker = "unsafe-pool-" + uuid.uuid4().hex
+    repr_marker = "unsafe-connection-" + uuid.uuid4().hex
+    calls = []
+    class VisibleConnection(FakePoolConnection):
+        def __repr__(self):
+            return repr_marker
+    def fake_connect(*args, **kwargs):
+        calls.append((args, kwargs))
+        return VisibleConnection()
+    def forbidden(*args, **kwargs):
+        raise AssertionError("real connection is forbidden")
+    monkeypatch.setattr(psycopg, "connect", fake_connect)
+    monkeypatch.setattr(psycopg.Connection, "connect", classmethod(forbidden))
+    name = "b2c_unprotected_" + uuid.uuid4().hex
+    engine = sqlalchemy.create_engine(
+        sqlalchemy.URL.create("postgresql+psycopg", host="127.0.0.1"),
+        pool_logging_name=name, echo_pool=False,
+    )
+    monkeypatch.setattr(engine.dialect, "initialize", lambda connection: None)
+    caplog.set_level(logging.DEBUG, logger=engine.pool.logger.name)
+    try:
+        connection = engine.connect()
+        dbapi = connection.connection.dbapi_connection
+        def fail_close():
+            raise RuntimeError(marker)
+        dbapi.close = fail_close
+        caplog.clear()
+        connection.invalidate(RuntimeError(marker))
+        connection.close()
+        records = [r for r in caplog.records if r.name == engine.pool.logger.name]
+        infos = [r for r in records if r.levelno == logging.INFO]
+        errors = [r for r in records if r.levelno == logging.ERROR]
+        assert any(marker in r.getMessage() for r in infos)
+        assert any(repr_marker in r.getMessage() for r in infos)
+        assert any(r.exc_info and marker in "".join(traceback.format_exception(*r.exc_info))
+                   for r in errors)
+        assert marker in caplog.text
+        assert len(calls) == 1
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize("close", [True, False])
+def test_b2c_old_and_new_pool_separate_info_error(offline_pool, caplog, close):
+    import io
+
+    engine, created, checks = offline_pool
+    marker = "protected-pool-" + uuid.uuid4().hex
+    caplog.set_level(logging.DEBUG)
+    stream = io.StringIO()
+    observer = logging.StreamHandler(stream)
+    observer.setLevel(logging.DEBUG)
+    observer.setFormatter(logging.Formatter("%(name)s %(levelname)s %(message)s"))
+    root = logging.getLogger()
+    app = logging.getLogger("dataflow_manager.db.pool_diagnostics")
+    app_stream = io.StringIO()
+    app_observer = logging.StreamHandler(app_stream)
+    app_observer.setLevel(logging.DEBUG)
+    app_observer.setFormatter(logging.Formatter("%(name)s %(levelname)s %(message)s"))
+    root.addHandler(observer)
+    app.addHandler(app_observer)
+    try:
+        old_connection = engine.connect()
+        old_pool = engine.pool
+        engine.dispose(close=close)
+        assert engine.pool is not old_pool and engine.pool.logger is old_pool.logger
+        assert old_pool.logger.handlers == [session._pool_handler]
+        def exercise(connection):
+            caplog.clear()
+            stream.seek(0)
+            stream.truncate(0)
+            app_stream.seek(0)
+            app_stream.truncate(0)
+            dbapi = connection.connection.dbapi_connection
+            def fail_close():
+                raise RuntimeError(marker)
+            dbapi.close = fail_close
+            connection.invalidate(RuntimeError(marker))
+            connection.close()
+            records = [r for r in caplog.records if r.name == "dataflow_manager.db.pool_diagnostics"]
+            assert {r.category for r in records} >= {"POOL_DIAGNOSTIC_EVENT", "POOL_DIAGNOSTIC_ERROR"}
+            assert all(not r.args and r.exc_info is None and r.stack_info is None for r in records)
+            assert marker not in caplog.text and marker not in stream.getvalue()
+            assert marker not in app_stream.getvalue()
+            assert "Pool diagnostic error" in stream.getvalue()
+            assert "Pool diagnostic error" in app_stream.getvalue()
+            assert not any(r.name == session._POOL_LOGGER_NAME for r in caplog.records)
+        exercise(old_connection)
+        new_connection = engine.connect()
+        exercise(new_connection)
+        assert len(created) == 2 and len(checks) == 3
+    finally:
+        root.removeHandler(observer)
+        app.removeHandler(app_observer)
+        observer.close()
+        app_observer.close()
+
+
+@pytest.mark.parametrize("conflict", ["disabled", "identity"])
+def test_b2c_additional_logger_conflict(monkeypatch, db_config, dbapi_spy, conflict):
+    import sqlalchemy
+    monkeypatch.setattr(session, "check_libpq_capability", lambda: None)
+    channel = session._configure_pool_diagnostics()
+    calls = []
+    monkeypatch.setattr(sqlalchemy, "create_engine", lambda *a, **kw: calls.append(1))
+    if conflict == "disabled":
+        monkeypatch.setattr(channel, "disabled", True)
+    else:
+        monkeypatch.setattr(session, "_pool_handler", logging.NullHandler())
+    with pytest.raises(session.EngineInitError) as caught:
+        session._create_intermediate_resources(db_config)
+    assert caught.value.code == "DB_ENGINE_INIT_FAILED"
+    assert not calls and not dbapi_spy
+
+
+@pytest.mark.parametrize("forbidden", [
+    {"PGHOSTADDR": "pg-secret-host"},
+    {"PG_UNKNOWN_B2C": "pg-secret-unknown"},
+    {"PG_EMPTY_B2C": ""},
+    {"PG_FIRST_B2C": "pg-secret-first", "PG_SECOND_B2C": "pg-secret-second"},
+])
+def test_b2c_replacement_pg_secrets_and_config_read_spy(monkeypatch, db_config, caplog, forbidden):
+    import os
+    from collections.abc import MutableMapping
+    from dataclasses import FrozenInstanceError
+    from dataflow_manager.db import config as config_module
+
+    forbid_network(monkeypatch)
+    suffix = uuid.uuid4().hex
+    forbidden = {key: value + "-" + suffix if value else value for key, value in forbidden.items()}
+    password = "password-marker-" + uuid.uuid4().hex
+    values = {
+        "HOST": "127.0.0.1", "PORT": "5432", "NAME": "b2c_test", "USER": "b2c_user",
+        "PASSWORD": password, "POOL_SIZE": "2", "MAX_OVERFLOW": "1", "POOL_TIMEOUT": "5",
+        "CONNECT_TIMEOUT": "3", "POOL_PRE_PING": "true", "POOL_RECYCLE": "1800",
+        "ISOLATION_LEVEL": "READ COMMITTED",
+    }
+    actual_env = os.environ
+    for key, value in values.items():
+        monkeypatch.setitem(actual_env, "DFM_DB_" + key, value)
+
+    class EnvironmentSpy(MutableMapping):
+        def __init__(self, wrapped):
+            self.wrapped = wrapped
+            self.reads = []
+        def __getitem__(self, key):
+            if key.startswith("DFM_DB_"):
+                self.reads.append(key)
+            return self.wrapped[key]
+        def __iter__(self):
+            return iter(self.wrapped)
+        def __len__(self):
+            return len(self.wrapped)
+        def __setitem__(self, key, value):
+            self.wrapped[key] = value
+        def __delitem__(self, key):
+            del self.wrapped[key]
+
+    env = EnvironmentSpy(actual_env)
+    loads = []
+    original_load = config_module.load_database_config
+    def observed_load(environment):
+        loads.append("load")
+        return original_load(environment)
+    monkeypatch.setattr(config_module, "load_database_config", observed_load)
+    config = config_module.load_database_config(env)
+    assert loads == ["load"]  # positive loader control
+    loads.clear()
+    assert set(env.reads) >= {"DFM_DB_" + key for key in values}
+    with pytest.raises(FrozenInstanceError):
+        config.password = "changed"
+    env.reads.clear()
+    assert env["DFM_DB_PASSWORD"] == password
+    assert env.reads == ["DFM_DB_PASSWORD"]  # positive spy control
+    env.reads.clear()
+    monkeypatch.setattr(os, "environ", env)
+    calls, created = [], []
+    def fake_connect(*args, **kwargs):
+        calls.append((args, kwargs.copy()))
+        connection = FakePoolConnection()
+        created.append(connection)
+        return connection
+    def forbidden_connect(*args, **kwargs):
+        raise AssertionError("real DBAPI connect forbidden")
+    monkeypatch.setattr(psycopg, "connect", fake_connect)
+    monkeypatch.setattr(psycopg.Connection, "connect", classmethod(forbidden_connect))
+    monkeypatch.setattr(session, "check_libpq_capability", lambda: None)
+    engine, _ = session._create_intermediate_resources(config)
+    monkeypatch.setattr(engine.dialect, "initialize", lambda connection: None)
+    caplog.set_level(logging.DEBUG)
+    try:
+        with engine.connect() as first:
+            original = first.connection.dbapi_connection
+        assert len(calls) == 1
+        assert set(calls[0][1]) == {
+            "host", "port", "dbname", "user", "password", "connect_timeout",
+            "sslmode", "gssencmode", "require_auth", "context",
+        }
+        assert {key: value for key, value in calls[0][1].items() if key != "context"} == {
+            "host": "127.0.0.1", "port": 5432, "dbname": "b2c_test", "user": "b2c_user",
+            "password": password, "connect_timeout": 3, "sslmode": "disable",
+            "gssencmode": "disable", "require_auth": "scram-sha-256",
+        }
+        assert isinstance(calls[0][1]["context"], psycopg.adapt.AdaptersMap)
+        actual_env["DFM_DB_PASSWORD"] = "changed-after-snapshot-" + uuid.uuid4().hex
+        original.ping_failure = "disconnect"
+        for key, value in forbidden.items():
+            actual_env[key] = value
+        before = dict(actual_env)
+        env.reads.clear()
+        caplog.clear()
+        markers = [password] + [value for value in forbidden.values() if value]
+        logging.getLogger("b2c-pg-positive-control").warning("%s", markers)
+        assert all(marker in caplog.text for marker in markers)
+        caplog.clear()
+        with pytest.raises(ConfigError) as caught:
+            engine.connect()
+        assert caught.value.code == "DB_ENV_FORBIDDEN"
+        assert len(calls) == 1 and original.pings == 1 and original.closed
+        assert env.reads == [] and loads == []
+        assert dict(actual_env) == before
+        assert password not in caplog.text
+        assert all(not value or value not in caplog.text for value in forbidden.values())
+        assert not any(r.exc_info or r.stack_info for r in caplog.records)
+        rendered = "".join(traceback.format_exception(caught.type, caught.value, caught.tb))
+        assert all(marker not in rendered for marker in markers)
+        assert all(marker not in repr(record.__dict__) for marker in markers for record in caplog.records)
+        for key in forbidden:
+            del actual_env[key]
+        with engine.connect():
+            pass
+        assert len(calls) == 2
+        assert calls[0][0] == calls[1][0]
+        assert calls[0][1] == calls[1][1]
+        assert calls[1][1]["password"] == password
+        assert env.reads == [] and loads == []
+    finally:
+        for key in forbidden:
+            actual_env.pop(key, None)
+        engine.dispose()
