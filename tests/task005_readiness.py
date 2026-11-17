@@ -1,6 +1,7 @@
 """Offline resource plan: no authority to prepare, connect, execute or clean up."""
 
 from dataclasses import dataclass
+import logging
 from uuid import UUID
 
 
@@ -35,3 +36,9 @@ def require_real_integration_gate(*, opt_in=False, owner_approved=False,
     if not all(value is True for value in (opt_in, owner_approved, isolated_server,
                                            sql_approved, inventory_verified)):
         raise RuntimeError("TASK005_INTEGRATION_NOT_AUTHORIZED")
+
+
+def require_safe_driver_logging():
+    """Fail closed while psycopg could emit dynamic connection failures."""
+    if logging.getLogger("psycopg").isEnabledFor(logging.DEBUG):
+        raise RuntimeError("TASK005_DRIVER_LOGGING_UNSAFE")

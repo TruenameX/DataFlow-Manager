@@ -1,0 +1,62 @@
+{
+  "run_id": "51a5eb7a3d824992b7d35002df1fec0e",
+  "endpoint": "127.0.0.1:5432",
+  "database": "task005_51a5eb7a3d824992b7d35002df1fec0e",
+  "preparation_role": "task005_prep_51a5eb7a3d824992b7d35002df1fec0e",
+  "test_role": "task005_test_51a5eb7a3d824992b7d35002df1fec0e",
+  "created": [
+    {
+      "kind": "role",
+      "name": "task005_prep_51a5eb7a3d824992b7d35002df1fec0e"
+    },
+    {
+      "kind": "role",
+      "name": "task005_test_51a5eb7a3d824992b7d35002df1fec0e"
+    },
+    {
+      "kind": "database",
+      "name": "task005_51a5eb7a3d824992b7d35002df1fec0e",
+      "owner": "Test_User"
+    }
+  ],
+  "status": "cleanup complete; evidence retained",
+  "owner": "Test_User",
+  "migrations": [
+    "0001_data_sources",
+    "0002_host_policy"
+  ],
+  "tables": [
+    "public.data_sources",
+    "public.alembic_version",
+    "public.task005_probe"
+  ],
+  "committed_rows": [
+    "e93914b0afbf4a87b3ebc1960767edd5",
+    "e0c68499932f4d20975d0b38d5fc9b4c",
+    "63bd0e01afd6480b915e93d168368c7d",
+    "933bd1d0525846ca97f871671a3a2e05"
+  ],
+  "privileges": "new DB: prep CONNECT and public USAGE/CREATE; test CONNECT and public USAGE",
+  "revision": "0002_host_policy",
+  "automatic_memberships": "Test_User has ADMIN on both new roles, INHERIT=false, SET=false",
+  "probe_intentions_requiring_verification": [],
+  "probe_ledger": "tests/integration/task005_ledger_51a5eb7a3d824992b7d35002df1fec0e.jsonl",
+  "remaining_probe_rows": 0,
+  "test_database_backends_at_check": 0,
+  "probe_intentions_checked_absent_count": 4,
+  "live_regression": "8 passed, 1 failed, 1 warning",
+  "live_e2_regression": "5 passed",
+  "offline_regression": "362 passed, 1 warning",
+  "cleanup": {
+    "database": "deleted and verified",
+    "roles": {
+      "task005_prep_51a5eb7a3d824992b7d35002df1fec0e": "deleted and verified",
+      "task005_test_51a5eb7a3d824992b7d35002df1fec0e": "deleted and verified"
+    },
+    "keychain": {
+      "task005_prep_51a5eb7a3d824992b7d35002df1fec0e": "deleted and verified",
+      "task005_test_51a5eb7a3d824992b7d35002df1fec0e": "deleted and verified"
+    },
+    "status": "complete"
+  }
+}

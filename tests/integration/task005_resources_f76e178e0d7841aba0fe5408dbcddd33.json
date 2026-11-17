@@ -1,0 +1,122 @@
+{
+  "run_id": "f76e178e0d7841aba0fe5408dbcddd33",
+  "endpoint": "127.0.0.1:5432",
+  "database": "task005_f76e178e0d7841aba0fe5408dbcddd33",
+  "preparation_role": "task005_prep_f76e178e0d7841aba0fe5408dbcddd33",
+  "test_role": "task005_test_f76e178e0d7841aba0fe5408dbcddd33",
+  "created": [
+    {
+      "kind": "keychain",
+      "account": "task005_prep_f76e178e0d7841aba0fe5408dbcddd33",
+      "service": "dataflow-manager-task005-f76e178e0d7841aba0fe5408dbcddd33"
+    },
+    {
+      "kind": "role",
+      "name": "task005_prep_f76e178e0d7841aba0fe5408dbcddd33"
+    },
+    {
+      "kind": "keychain",
+      "account": "task005_test_f76e178e0d7841aba0fe5408dbcddd33",
+      "service": "dataflow-manager-task005-f76e178e0d7841aba0fe5408dbcddd33"
+    },
+    {
+      "kind": "role",
+      "name": "task005_test_f76e178e0d7841aba0fe5408dbcddd33"
+    },
+    {
+      "kind": "database",
+      "name": "task005_f76e178e0d7841aba0fe5408dbcddd33",
+      "owner": "Test_User"
+    }
+  ],
+  "status": "cleanup complete; evidence retained",
+  "owner": "Test_User",
+  "migrations": [
+    "0001_data_sources",
+    "0002_host_policy"
+  ],
+  "tables": [
+    "public.data_sources",
+    "public.alembic_version"
+  ],
+  "committed_rows": [
+    "047eb2f4cf434c7b8273f1a48cf0447b",
+    "06e6403e00e14727873a21ef79ac7047",
+    "58c7bd2817a3402f8ba28effcc9b3daa",
+    "5ac622c4cc9b46a597ae9e6350fe33a9",
+    "5bb43b98bef3419bbefd743c1445a0df",
+    "61071901b37f4787aeebc94d0dcf276d",
+    "82fe8cb5e9594aaca9b7a5a4c0476af9",
+    "aa77c357d1ea4a3593a94793bc286ef3",
+    "b8b4a2856c164659999490321b1b5269"
+  ],
+  "purpose": "TASK-006/007",
+  "schema_privileges": "prep CONNECT and public USAGE/CREATE; test CONNECT and public USAGE",
+  "server_identity": {
+    "version_num": 180006,
+    "client_endpoint": "127.0.0.1:5432",
+    "server_address": "172.17.0.2:5432",
+    "role": "Test_User"
+  },
+  "revision": "0002_host_policy",
+  "test_insert_columns": [
+    "database_name",
+    "host",
+    "id",
+    "name",
+    "password_encrypted",
+    "port",
+    "username"
+  ],
+  "test_update_columns": [
+    "database_name",
+    "host",
+    "name",
+    "password_encrypted",
+    "port",
+    "updated_at",
+    "username"
+  ],
+  "test_table_privileges": [
+    "SELECT",
+    "DELETE"
+  ],
+  "automatic_memberships": [
+    {
+      "role": "task005_prep_f76e178e0d7841aba0fe5408dbcddd33",
+      "member": "Test_User",
+      "admin": true,
+      "inherit": false,
+      "set": false
+    },
+    {
+      "role": "task005_test_f76e178e0d7841aba0fe5408dbcddd33",
+      "member": "Test_User",
+      "admin": true,
+      "inherit": false,
+      "set": false
+    }
+  ],
+  "cross_database_access_check": "both roles: no CONNECT to any other connectable database; template0 cannot accept connections",
+  "ledger": "tests/integration/task005_ledger_f76e178e0d7841aba0fe5408dbcddd33.jsonl",
+  "untracked_rows": [],
+  "live_protocols": [
+    "initial 4 passed, 2 failed (test harness, corrected)",
+    "final 6 passed"
+  ],
+  "offline_protocol": "377 passed, 1 warning",
+  "review": "independent acceptance recommended",
+  "cleanup": {
+    "database": "deleted and verified",
+    "roles": {
+      "task005_prep_f76e178e0d7841aba0fe5408dbcddd33": "deleted and verified",
+      "task005_test_f76e178e0d7841aba0fe5408dbcddd33": "deleted and verified"
+    },
+    "keychain": {
+      "task005_prep_f76e178e0d7841aba0fe5408dbcddd33": "deleted and verified",
+      "task005_test_f76e178e0d7841aba0fe5408dbcddd33": "deleted and verified"
+    },
+    "status": "complete"
+  },
+  "remaining_rows": 0
+}

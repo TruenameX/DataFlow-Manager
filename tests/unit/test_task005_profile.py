@@ -23,6 +23,7 @@ def env():
 
 def check(env, **options):
     values = {"approved": True, "approved_database": "task005_unique_123",
+              "approved_test_role": "task005_test_role",
               "preparation_role": "task005_prepare_role", "excluded_resources": frozenset({"task004_db"})}
     values.update(options)
     return profile.validate_profile(env, **values)
@@ -55,6 +56,7 @@ def test_rejects_bad_profile_and_forbidden_pg(env, name, value):
 
 @pytest.mark.parametrize("options", [
     {"approved": False}, {"approved": 1}, {"approved_database": "task005_other"},
+    {"approved_test_role": "other_role"},
     {"preparation_role": "task005_test_role"}, {"preparation_role": "bad role"},
     {"excluded_resources": frozenset({"task005_unique_123"})},
     {"excluded_resources": frozenset({"task005_test_role"})},

@@ -55,17 +55,27 @@ version(), inet_server_addr(), inet_server_port();` и сверить с утв�
 ```sql
 CREATE ROLE :"prep" LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
 CREATE ROLE :"test" LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
-CREATE DATABASE :"db" OWNER :"prep";
+CREATE DATABASE :"db";
 REVOKE CONNECT ON DATABASE :"db" FROM PUBLIC;
-GRANT CONNECT ON DATABASE :"db" TO :"test";
+GRANT CONNECT ON DATABASE :"db" TO :"prep", :"test";
+```
+
+Владелец новой БД — создавшая её административная роль; в новой БД владелец
+предоставляет preparation-роли USAGE и CREATE для public. Это позволяет выполнять
+миграции без предоставления административной роли членства SET в preparation-роли.
+В сессии владельца, подключённой к новой БД и после сверки identity:
+
+```sql
+GRANT USAGE, CREATE ON SCHEMA public TO :"prep";
 ```
 
 Использовать интерактивные `\password` для обеих ролей только после согласования
 секретного канала и включения на стенде SCRAM. После разрешения подключиться как
 preparation-role к новой БД, проверить `SELECT current_database(), current_user;`,
-затем создать таблицу указанной ниже командой и выдать test-role:
+затем создать таблицу и выдать test-role:
 
 ```sql
+CREATE TABLE task005_probe (probe_id text PRIMARY KEY, value text NOT NULL);
 GRANT USAGE ON SCHEMA public TO :"test";
 GRANT SELECT, INSERT ON TABLE public.task005_probe TO :"test";
 ```
@@ -75,12 +85,6 @@ CREATEDB, CREATEROLE, REPLICATION и членства в привилегиро�
 эффективные CONNECT/USAGE/SELECT/INSERT. Точную проверку членства и pg_hba
 утвердить с владельцем стенда до выполнения. Зафиксировать каждую успешную
 операцию в реестре; недостоверный результат — остановка, не автоматический retry.
-
-В новой БД после отдельного разрешения preparation-role создаёт тестовую таблицу:
-
-```sql
-CREATE TABLE task005_probe (probe_id text PRIMARY KEY, value text NOT NULL);
-```
 
 Тесты записывают UUID-ключи; commit-проверки оставляют строки в этой таблице.
 Записать таблицу и результаты в реестр. Никаких автоматических DELETE/DROP.
@@ -96,9 +100,20 @@ PG*-переменные, включая пустые, не допускаютс
 `DFM_TEST_INTEGRATION=YES`, `DFM_TEST_OWNER_APPROVED=YES`,
 `DFM_TEST_ISOLATED_SERVER=YES`, `DFM_TEST_SQL_APPROVED=YES`,
 `DFM_TEST_INVENTORY_VERIFIED=YES`, `DFM_TEST_APPROVED_DATABASE=<точная_база>`,
+`DFM_TEST_APPROVED_TEST_ROLE=<точная_тестовая_роль>`,
 `DFM_TEST_PREPARATION_ROLE=<точная_роль>` и непустой разделённый запятыми
 `DFM_TEST_EXCLUDED_RESOURCES=<проверенный_инвентарь_TASK004>`. Это утверждения
 оператора, а не криптографическое или серверное доказательство.
+`DFM_TEST_RUN_ID=<uuid текущего запуска>` должен соответствовать именам ресурсов;
+`DFM_TEST_EXPECTED_SERVER_ADDRESS=<проверенный адрес интерфейса PostgreSQL>`
+сверяется после подключения и может отличаться от клиентского loopback-адреса
+при использовании Docker-прокси.
+`DFM_TEST_LEDGER_PATH` должен указывать на новый файл вида
+`tests/integration/task005_ledger_<uuid>.jsonl`; fixture регистрирует намерение
+до commit и факт после него. Один `intended` без `committed` означает неизвестный
+исход, его нужно сверить отдельно; журнал не содержит credentials. Реестр базы,
+ролей, таблиц и миграций оператор ведёт отдельно — этот файл учитывает только
+идентификаторы committed probe rows.
 
 До физического подключения fixture проверяет эти утверждения, принятый M1 и
 профиль. После разрешённого подключения первым явным SQL fixture проверяет current_database,
@@ -107,6 +122,8 @@ current_user, server_version_num, адрес и порт. Несовпадени
 они тоже требуют отдельного разрешения. Первое подключение предшествует проверке
 серверной identity; локальный адрес и имя не доказывают владельца или изоляцию.
 Эти проверки не доказывают владельца сервера или фактические права.
+Тестовый gate отклоняет запуск, если logger `psycopg` допускает DEBUG, и
+проверяет это снова перед каждым физическим connect защищённого Engine.
 Затем, после отдельного разрешения на integration-тесты:
 
 ```text

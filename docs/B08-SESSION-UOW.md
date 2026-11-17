@@ -1,9 +1,9 @@
 # B08 — Session, Unit of Work и служебный I/O
 
-**Статус: APPROVED WITH CONDITIONS.** B08 v1.6, Q01–Q15, G04–G06,
+**Статус: APPROVED.** B08 v1.6, Q01–Q15, G04–G06,
 Test Profile v1.0 и детализация M1/M2 приняты прямым решением владельца в текущем
 согласовании. Утверждение контракта не означает реализации или прохождения тестов.
-Фактическая версия libpq, совместимость capability check и изоляция стенда — NOT VERIFIED.
+Integration conditions подтверждены в пределах изолированного стенда TASK-005: PostgreSQL 18.6, libpq 18.0.6 и утверждённый профиль; альтернативные HBA-конфигурации не испытывались.
 
 Источники и трассировка: [ADR-002](ARCHITECTURE.md#adr-002--служебная-postgresql-и-доступ-к-данным),
 [TASK-002](TASK-002.md), [TASK-005 и дети](BACKLOG.md#task-005--session-и-транзакции).
@@ -224,7 +224,7 @@ PostgreSQL 18.6, `127.0.0.1:5432`, отдельная `task005_<unique_id>`, о�
 
 ## 5. Проверки и условия реализации
 
-Все проверки B08 ниже **NOT RUN**. Offline: границы конфигурации и `PG*`, capability
+Проверки TASK-005 выполнены в указанном scope: offline 362 passed / 1 warning; отдельная live-регрессия auth/pool 5 passed; ранее приняты live transaction/lifecycle проверки. Очистка выделенной БД и ролей подтверждена реестром. Offline: границы конфигурации и `PG*`, capability
 gate с подменой, отсутствие I/O при import/создании Engine, Q08, fault injection каждой
 фазы UoW, составные ошибки, безопасные логи и маркеры с положительным контролем.
 Integration: реальные версия/возможности libpq, изолированный loopback, pg_hba и SCRAM,
