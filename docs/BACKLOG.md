@@ -136,11 +136,11 @@ JSON `{"status": "ok"}`, Content-Type `application/json`, без БД, ключ�
 | TASK-012 | Исполнитель проверки с общим дедлайном | Security & Networking | P0 | Blocked | SPIKE-001 | B03, B09 | Условно 1–3 часа; при превышении до старта — дочерние проверяемые карточки под TASK-012 |
 | TASK-013 | Безопасная классификация ошибок подключения | Security & Networking | P0 | Planned | SPIKE-006 | нет открытых Bxx | 1–2 часа |
 | TASK-014 | ConnectionCheckService | Security & Networking | P0 | Blocked | TASK-006, TASK-008, TASK-011, TASK-012, TASK-013 | B01, B02, B03, B04, B09, B10 | 2–3 часа |
-| TASK-015 | DTO/Pydantic и безопасные ошибки API | Sources API | P0 | Blocked | TASK-002, SPIKE-006 | нет открытых Bxx | 2–3 часа |
-| TASK-016 | POST /api/v1/sources | Sources API | P0 | Blocked | TASK-006, TASK-008, TASK-015 | B04, B08 conditions | 2–3 часа |
-| TASK-017 | GET список и GET по ID | Sources API | P0 | Blocked | TASK-006, TASK-015 | B08 conditions | 2 часа |
-| TASK-018 | PATCH источника | Sources API | P0 | Blocked | TASK-007, TASK-008, TASK-015 | B04, B08 conditions | 2–3 часа |
-| TASK-019 | DELETE источника | Sources API | P0 | Blocked | TASK-007, TASK-015 | B08 conditions | 1–2 часа |
+| TASK-015 | DTO/Pydantic и безопасные ошибки API | Sources API | P0 | ACCEPTED | TASK-002, SPIKE-006 | нет открытых Bxx | 2–3 часа |
+| TASK-016 | POST /api/v1/sources | Sources API | P0 | ACCEPTED | TASK-006, TASK-008, TASK-015 | B04, B08 conditions | 2–3 часа |
+| TASK-017 | GET список и GET по ID | Sources API | P0 | ACCEPTED | TASK-006, TASK-015 | B08 conditions | 2 часа |
+| TASK-018 | PATCH источника | Sources API | P0 | ACCEPTED | TASK-007, TASK-008, TASK-015 | B04, B08 conditions | 2–3 часа |
+| TASK-019 | DELETE источника | Sources API | P0 | ACCEPTED | TASK-007, TASK-015 | B08 conditions | 1–2 часа |
 | TASK-020 | POST /api/v1/sources/{id}/check | Sources API | P0 | Blocked | TASK-014, TASK-015, TASK-018 | B01, B02, B03, B04, B09, B10 | 2–3 часа |
 | TASK-021 | Интеграционные CRUD-тесты | Testing & Release | P0 | Blocked | TASK-016, TASK-017, TASK-018, TASK-019 | B04, B08 conditions | Условно 1–3 часа; при превышении до старта — дочерние проверяемые карточки под TASK-021 |
 | TASK-022 | Проверки секретов и ошибок | Testing & Release | P0 | Blocked | TASK-020, TASK-021 | B04 | 2–3 часа на готовых feature-fixtures |
@@ -825,7 +825,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 - **Epic:** Sources API
 - **Priority:** P0
-- **Status:** Blocked
+- **Status:** ACCEPTED
 - **Цель:** Закрепить согласованный публичный контракт без секретов.
 - **Scope:** Create/Patch/Read DTO, ID, отсутствие поля против null, правила полей/порта, единый безопасный error mapping; обработка FastAPI validation input/ctx и неожиданных исключений.
 - **Out of Scope:** Самостоятельное принятие UUID, timestamps, HTTP-кодов, null/пустого PATCH, extra=forbid; ORM напрямую в ответе.
@@ -836,6 +836,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
   2. Создание и переданные PATCH-значения валидируются одинаково; опущенный password различим от явно переданного null/пустого значения по принятому контракту.
 - **Definition of Ready:** общий DoR + Приняты форматы и вся матрица спорных входов; схема БД согласована.
 - **Definition of Done:** общий DoD + Контрактные/validation тесты и безопасный fallback исключений выполнены.
+- **Приёмка:** независимый reviewer рекомендовал приёмку; offline 463 passed / 1 warning, отдельный process-level Uvicorn log test 1 passed, live CRUD PostgreSQL 18.6 — 5 passed. SPIKE-006 проверен в рамках CRUD и текущего профиля Uvicorn; иные серверы/конфигурации и сетевой check сохраняют собственные gates.
 - **План проверки:** T-03/T-05: границы 1/65535, 0/65536, нецелые порты, отсутствующие/пустые строки, ID, password во входе/ctx.
 - **Оценка сложности:** 2–3 часа.
 - **Открытые решения, блокирующие реализацию:** нет открытых Bxx своего scope; предшественники и DoR сохраняются.
@@ -844,7 +845,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 - **Epic:** Sources API
 - **Priority:** P0
-- **Status:** Blocked
+- **Status:** ACCEPTED
 - **Цель:** Сохранить конфигурацию через тонкий API и SourceService.
 - **Scope:** Маршрут, SourceService.create, валидация DTO, encrypt до записи, транзакция, безопасный ответ и конфликты.
 - **Out of Scope:** Проверка доступности/allowlist во время CRUD; бизнес-логика в маршруте.
@@ -855,6 +856,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
   2. Дубликат/невалидные поля/сбой БД или ключа не оставляют частичной записи; resolver/connector не вызываются.
 - **Definition of Ready:** общий DoR + Готовы repository, CryptoService и DTO; приняты HTTP/JSON.
 - **Definition of Done:** общий DoD + API-тесты успешного/ошибочного create и service-тесты атомарности выполнены.
+- **Приёмка:** независимый reviewer рекомендовал приёмку; offline 463 passed / 1 warning, отдельный process-level Uvicorn log test 1 passed, live CRUD PostgreSQL 18.6 — 5 passed. SPIKE-006 проверен в рамках CRUD и текущего профиля Uvicorn; иные серверы/конфигурации и сетевой check сохраняют собственные gates.
 - **План проверки:** T-01/T-02/T-04/T-05/T-13; PostgreSQL и перезапуск приложения; конкуренция дополнительно TASK-021.
 - **Оценка сложности:** 2–3 часа.
 - **Условия:** B04 и B08 APPROVED; проверки соответствующей feature остаются обязательными.
@@ -863,7 +865,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 - **Epic:** Sources API
 - **Priority:** P0
-- **Status:** Blocked
+- **Status:** ACCEPTED
 - **Цель:** Возвращать все несекретные параметры без сетевых проверок.
 - **Scope:** Тонкие GET, SourceService.list/get; полный и пустой список, неизвестный/удалённый/некорректный ID, безопасный отказ БД.
 - **Out of Scope:** Пагинация, decrypt при чтении, DNS источника.
@@ -874,6 +876,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
   2. Неизвестный/удалённый ID, неверный формат и сбой БД различаются по контракту; отказ БД не выглядит пустым списком; сетевых вызовов нет.
 - **Definition of Ready:** общий DoR + Приняты DTO, форматы ID и ошибок; repository готов.
 - **Definition of Done:** общий DoD + API/service-тесты чтения с spy сетевых зависимостей и проверкой утечек выполнены.
+- **Приёмка:** независимый reviewer рекомендовал приёмку; offline 463 passed / 1 warning, отдельный process-level Uvicorn log test 1 passed, live CRUD PostgreSQL 18.6 — 5 passed. SPIKE-006 проверен в рамках CRUD и текущего профиля Uvicorn; иные серверы/конфигурации и сетевой check сохраняют собственные gates.
 - **План проверки:** T-01/T-05/T-13; тест чтения при недоступном ключе по принятому контракту без decrypt.
 - **Оценка сложности:** 2 часа.
 - **Условия:** B08 APPROVED; применимые проверки и зависимости остаются обязательными.
@@ -882,7 +885,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 - **Epic:** Sources API
 - **Priority:** P0
-- **Status:** Blocked
+- **Status:** ACCEPTED
 - **Цель:** Атомарно изменить конфигурацию с сохранением ID.
 - **Scope:** SourceService.patch, маршрут, разделение missing/null/empty; новый допустимый пароль encrypt, отсутствующий оставляет токен; конфликт rename и rollback.
 - **Out of Scope:** Автоматическая проверка источника, PUT, произвольная нормализация пароля.
@@ -893,6 +896,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
   2. Новый допустимый пароль хранится зашифрованно; невалидные поля/конфликт/ошибка ключа или БД не меняют запись частично.
 - **Definition of Ready:** общий DoR + Приняты все спорные PATCH-входы и готов транзакционный сервис.
 - **Definition of Done:** общий DoD + Unit/API/PG-тесты missing/new password, rollback и rename выполнены; применение нового пароля при check проверяется TASK-014/TASK-020.
+- **Приёмка:** независимый reviewer рекомендовал приёмку; offline 463 passed / 1 warning, отдельный process-level Uvicorn log test 1 passed, live CRUD PostgreSQL 18.6 — 5 passed. SPIKE-006 проверен в рамках CRUD и текущего профиля Uvicorn; иные серверы/конфигурации и сетевой check сохраняют собственные gates.
 - **План проверки:** T-02/T-03/T-04/T-05/T-11/T-13; сравнить строку БД до/после отказа.
 - **Оценка сложности:** 2–3 часа.
 - **Условия:** B04 и B08 APPROVED; проверки соответствующей feature остаются обязательными.
@@ -901,7 +905,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
 
 - **Epic:** Sources API
 - **Priority:** P0
-- **Status:** Blocked
+- **Status:** ACCEPTED
 - **Цель:** Удалить запись и её токен из рабочего хранилища.
 - **Scope:** Тонкий DELETE и SourceService.delete, физическое удаление, безопасные ответы на отсутствие/сбой.
 - **Out of Scope:** Soft delete, обещание стирания backups/WAL, подключение к целевой БД.
@@ -912,6 +916,7 @@ B05/B06/B07 сняты как продуктовые блокеры; завис�
   2. Повторное удаление сообщает отсутствие, сбой БД не подтверждает успех; целевой connector/resolver не вызываются.
 - **Definition of Ready:** общий DoR + Приняты HTTP-код/тело DELETE и ошибки; repository готов.
 - **Definition of Done:** общий DoD + API/PG-тесты успешного, повторного и неуспешного удаления выполнены.
+- **Приёмка:** независимый reviewer рекомендовал приёмку; offline 463 passed / 1 warning, отдельный process-level Uvicorn log test 1 passed, live CRUD PostgreSQL 18.6 — 5 passed. SPIKE-006 проверен в рамках CRUD и текущего профиля Uvicorn; иные серверы/конфигурации и сетевой check сохраняют собственные gates.
 - **План проверки:** T-01/T-11/T-13: запрос таблицы, рестарт, сетевые spies.
 - **Оценка сложности:** 1–2 часа.
 - **Условия:** B08 APPROVED; применимые проверки и зависимости остаются обязательными.

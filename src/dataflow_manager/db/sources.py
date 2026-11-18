@@ -48,6 +48,7 @@ class SourceRepository:
 
     def __init__(self, uow):
         self._uow = uow
+        self._locked = None
 
     def _guard(self):
         uow = self._uow
@@ -92,14 +93,21 @@ class SourceRepository:
     def list(self):
         return self._run(lambda session: list(session.scalars(select(DataSource)).all()))
 
-    def update(self, source_id, changes):
+    def _get_for_update(self, source_id):
+        """Lock and refresh one row, retaining it only within this repository."""
+        self._locked = self._run(lambda session: session.scalars(
+            select(DataSource).where(DataSource.id == source_id).with_for_update()
+            .execution_options(populate_existing=True)).first())
+        return self._locked
+
+    def _update_locked(self, item, changes):
+        """Apply a change to the row locked by this repository in this UoW."""
         self._guard()
+        if item is None or item is not self._locked:
+            raise ValueError("source is not locked")
         if type(changes) is not dict or not changes or not changes.keys() <= _FIELDS:
             raise ValueError("invalid source changes")
         def operation(session):
-            item = session.scalars(select(DataSource).where(DataSource.id == source_id).with_for_update().execution_options(populate_existing=True)).first()
-            if item is None:
-                return None
             changed = any(key == "password_encrypted" or getattr(item, key) != value
                           for key, value in changes.items())
             if not changed:
@@ -110,6 +118,13 @@ class SourceRepository:
             session.flush()
             return item
         return self._run(operation)
+
+    def update(self, source_id, changes):
+        self._guard()
+        if type(changes) is not dict or not changes or not changes.keys() <= _FIELDS:
+            raise ValueError("invalid source changes")
+        item = self._get_for_update(source_id)
+        return None if item is None else self._update_locked(item, changes)
 
     def delete(self, source_id):
         def operation(session):

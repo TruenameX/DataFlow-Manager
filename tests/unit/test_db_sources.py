@@ -30,6 +30,7 @@ class FakeSession:
         return self.item
     def scalars(self, statement):
         self.calls.append("scalars")
+        self.last_statement = statement
         if self.error: raise self.error
         return SimpleNamespace(first=lambda: self.item, all=lambda: [] if self.item is None else [self.item])
 
@@ -107,6 +108,26 @@ def test_reuse_is_guarded_and_unsafe_update_fields_rejected():
         with pytest.raises(ValueError): repo.update(uuid4(), {"updated_at": "secret"})
     with pytest.raises(UowError): repo.get(uuid4())
     assert "get" not in session.calls
+
+
+def test_locked_update_reuses_one_select_and_guards_other_objects():
+    session = FakeSession()
+    uow = UnitOfWork(lambda: session)
+    with uow:
+        repo = SourceRepository(uow)
+        source = repo.create(name="Name", host="localhost", port=5432, database_name="db",
+                             username="user", password_encrypted="token")
+        locked = repo._get_for_update(uuid4())
+        assert locked is source
+        assert session.last_statement._for_update_arg is not None
+        assert session.last_statement.get_execution_options()["populate_existing"] is True
+        with pytest.raises(ValueError, match="source is not locked"):
+            repo._update_locked(object(), {"host": "other"})
+        before = session.calls.count("scalars")
+        repo._update_locked(locked, {"host": "example.test"})
+        assert session.calls.count("scalars") == before
+        assert source.host == "example.test"
+        uow.commit()
 
 
 def test_broken_conflict_diagnostics_remain_safe():

@@ -121,7 +121,7 @@ Trigger не выбран. Это DB/application-контракт, а не га�
 
 ## 4. API Design
 
-**Утверждено B05/B07.** DTO/HTTP-коды ниже нормативны для целевого v0.1, но production API ещё отсутствует.
+**Утверждено B05/B07.** CRUD TASK-015–019 реализован и принят в проверенном scope; endpoint check остаётся будущей функциональностью.
 Реестр экспериментальных доказательств и DEFERRED — [BACKLOG §15](BACKLOG.md#15-approved-decisions-and-evidence).
 
 ### Схемы
